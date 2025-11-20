@@ -4,7 +4,7 @@ from datetime import datetime
 
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("The socket is created successfully")
-server_ip='127.0.0.1'
+server_ip='0.0.0.0'
 server_port=1500
 
 s.connect((server_ip,server_port))
