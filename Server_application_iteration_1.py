@@ -1,16 +1,16 @@
 import socket, sys
-
 from datetime import datetime
 
-s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print("The socket is created successfully")
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_ip='0.0.0.0'
 server_port=1500
 
-s.connect((server_ip,server_port))
-incoming_message=s.recv(1000)
-print("Message:",incoming_message)
-print("Received at: ", str(datetime.now()))
-s.close()
+s.bind((server_ip,server_port))
+s.listen(10)
+while True:
+        csc, address=s.accept()
+        print("Connected from",address)
+        print("Message sent at:",str(datetime.now()))
+        csc.send("Thank you for coneccting, this is the server")
 
-#test
+s.close()
