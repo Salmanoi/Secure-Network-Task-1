@@ -33,7 +33,7 @@ def generate_key(password: str, salt: bytes) -> bytes:
 	return kdf.derive(password.encode())
 
 def client_send_file(file_path, server_ip, server_port):
-	password = "1234567890"  # Key will be derived from this password
+	password = "%Pa55w0rd"  # Key will be derived from this password
 	salt = os.urandom(16)  # Random salt for key derivation
 	# Read file
 	with open(file_path, 'rb') as f:
