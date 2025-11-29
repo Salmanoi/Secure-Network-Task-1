@@ -13,7 +13,7 @@ def encrypt(plaintext: bytes, key: bytes) -> (bytes, bytes):
     encryptor = cipher.encryptor()
 
 
-    # Pad the data to be a multiple of 128 bits (16 bytes)
+    # data padding to be a multiple of 128 bits (16 bytes)
     padder = padding.PKCS7(128).padder()
     padded_data = padder.update(plaintext) + padder.finalize()
 
