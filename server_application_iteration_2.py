@@ -63,4 +63,4 @@ def server_receive_file(save_path, server_ip, server_port):
 		print("File received and decrypted successfully!")
 
 if __name__ == "__main__":
-    server_receive_file("received_textfile.txt", "127.0.0.1", 65432)
+    server_receive_file("received_textfile.txt", "127.0.0.1", 1500)
