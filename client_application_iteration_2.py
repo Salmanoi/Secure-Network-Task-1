@@ -8,9 +8,19 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 
 def encrypt(plaintext: bytes, key: bytes) -> (bytes, bytes):
-	iv = os.urandom(16)  # Initialization vector (IV)
-	cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-	encryptor = cipher.encryptor()
+    iv = os.urandom(16)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+
+
+    # Pad the data to be a multiple of 128 bits (16 bytes)
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(plaintext) + padder.finalize()
+
+    # Encrypt the padded data
+    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
+    
+    return iv, ciphertext
 	
 def generate_key(password: str, salt: bytes) -> bytes:
 	kdf = PBKDF2HMAC(
@@ -44,4 +54,4 @@ def client_send_file(file_path, server_ip, server_port):
 	print("File sent successfully!")
 
 if __name__ == "__main__":
-	client_send_file("C:\Users\salmo\Desktop\example.txt", "127.0.0.1", 1500)
+	client_send_file("C:/Users/salmo/Desktop/example.txt", "127.0.0.1", 1500)
