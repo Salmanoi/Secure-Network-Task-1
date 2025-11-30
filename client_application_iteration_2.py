@@ -54,4 +54,4 @@ def client_send_file(file_path, server_ip, server_port):
 	print("File sent successfully!")
 
 if __name__ == "__main__":
-	client_send_file("C:/Users/salmo/Desktop/example.txt", "127.0.0.1", 1500)
+	client_send_file("example.txt", "127.0.0.1", 1500)
