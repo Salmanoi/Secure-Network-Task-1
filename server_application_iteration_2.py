@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import padding, serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 #############################################################################
 # Configuring Server IP, port, and the Buffer size #
-SERVER_IP = '127.0.0.1' # --LOOPBACK-- CHANGE THIS FOR THE CONFIGURATION OF DEMONSTRATION
+SERVER_IP = '127.0.0.1' # --LOOPBACK-- DONT FORGET TO CHANGE THIS FOR THE CONFIGURATION OF DEMONSTRATION
 SERVER_PORT = 1500 # WILL KEEP AS 1500 ALWAYS
 BUFFER_SIZE = 1024 # GETS DATA IN CHUNKS OF 1024 BYTES
 LOG_FILE = "server.log"
