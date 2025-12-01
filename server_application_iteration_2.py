@@ -1,11 +1,35 @@
 import socket
 import os
+import sys
+import threading
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
+
+# Configuring Server IP, port, and the Buffer size #
+SERVER_IP = '127.0.0.1' # --LOOPBACK-- CHANGE THIS FOR THE CONFIGURATION OF DEMONSTRATION
+SERVER_PORT = 1500 # WILL KEEP AS 1500 ALWAYS
+BUFFER_SIZE = 1024 # GETS DATA IN CHUNKS OF 1024 BYTES
+
+class ClientThread(threading.Thread):
+	def __init__(self, ip, port, client_socket):
+		threading.Thread.__init__(self)
+		self.ip = ip
+		self.port = port
+		self.client_socket - client_socket
+		print(f"[+] Thread started for {ip}:{port}")
+
+	def run(self):
+		password = "%Pa55w0rd" # the password shared with the client
+		full_data = b""
+
+		try:
+			# this loop is here to recieve all the data in the 1024 buffer size amount
+			while True:
+				
 
 # Generate AES key from a password (for demonstration)
 def generate_key(password: str, salt: bytes) -> bytes:
