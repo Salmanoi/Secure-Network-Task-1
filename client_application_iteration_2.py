@@ -167,7 +167,7 @@ if __name__ == "__main__":
 	print("---Bletchley Park SRS client---")
 	print(f"Target log file: {target_file}")
 	print("1. Manual Report sending")
-	print(f"Automated report sending at {SCHEDULED_TIME_HOUR}:{SCHEDULED_TIME_MINUTE}")
+	print(f"2. Automated report sending at {SCHEDULED_TIME_HOUR}:{SCHEDULED_TIME_MINUTE}")
 
 	choice = input("Please choose 1/2: ")
 

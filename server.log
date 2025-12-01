@@ -1,0 +1,5 @@
+2025-12-01 23:54:55 - INFO - System Started: Server is listening on 127.0.0.1:1500...
+2025-12-01 23:55:46 - INFO - Connected to client: 127.0.0.1:59721
+2025-12-01 23:55:46 - INFO - 127.0.0.1:59721 is verified.
+2025-12-01 23:55:46 - INFO - Log saved securely as received_file_59721.txt
+2025-12-01 23:55:46 - INFO - Socket connection closed for client: 127.0.0.1:59721
