@@ -153,7 +153,7 @@ def server_start():
 		logging.critical(f"Server Fail: {e}")
 		sys.exit(1)
 
-
+# This section is to decrypt the AES encryption of the message
 def decrypt_aes(ciphertext, key, iv): 
 	cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
 	decryptor = cipher.decryptor()
@@ -163,11 +163,13 @@ def decrypt_aes(ciphertext, key, iv):
 	plaintext = unpadder.update(decrypted_padded) + unpadder.finalize()
 	return plaintext
 
+
+# decrypts the report/log, this is required otherwise it will be deterministic
 def decrypt_session(encrypted_key, private_key):
 	"""RSA being used to decrypt AES session key"""
 	return private_key.decrypt(
 		encrypted_key,
-		asym_padding.OAEP(
+		asym_padding.OAEP( # OAEP = Optimal Asym encryption padding, translated from pycryptodome to Cryptography
 			mgf=asym_padding.MGF1(algorithm=hashes.SHA256()),
 			algorithm=hashes.SHA256(),
 			label=None

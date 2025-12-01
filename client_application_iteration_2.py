@@ -1,57 +1,39 @@
 import socket
 import os
+import time
+import sys
+import datetime
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import padding, hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 
-def encrypt(plaintext: bytes, key: bytes) -> (bytes, bytes):
-    iv = os.urandom(16)
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-    encryptor = cipher.encryptor()
+# SERVER INFORMATION & KEYS # 
+SERVER_IP = '127.0.0.1' # --LOOPBACK-- DONT FORGET TO CHANGE THIS FOR THE CONFIGURATION OF DEMONSTRATION
+SERVER_PORT = 1500 # WILL KEEP AS 1500 ALWAYS
+
+server_public_key = "server_public_key.pem"
+client_private_key = "client_private_key.pem"
+
+def key_loading():
+	"""Loading RSA keys from .pem files"""
+	try:
+		with open(client_private_key, "rb") as f:
+			client_priv = serialization.load_pem_private_key(
+				f.read(), password=None, backend=default_backend()
+			)
+		with open(server_public_key, "rb") as f:
+			server_pub = serialization.load_pem_public_key(
+				f.read(), backend=default_backend()
+			)
+		return client_priv, server_pub
+	except FileNotFoundError:
+		print("Error: Key's not found, Run 'key-generation.py' first or again.")
+		sys.exit(1)
 
 
-    # data padding to be a multiple of 128 bits (16 bytes)
-    padder = padding.PKCS7(128).padder()
-    padded_data = padder.update(plaintext) + padder.finalize()
 
-    # Encrypt the padded data
-    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
-    
-    return iv, ciphertext
-	
-def generate_key(password: str, salt: bytes) -> bytes:
-	kdf = PBKDF2HMAC(
-	algorithm=hashes.SHA512(),
-	length=32,  # AES-256 key length
-	salt=salt,
-	iterations=100000,
-	backend=default_backend()
-	)
-	return kdf.derive(password.encode())
-
-def client_send_file(file_path, server_ip, server_port):
-	password = "%Pa55w0rd"  # Key will be derived from this password
-	salt = os.urandom(16)  # Random salt for key derivation
-	# Read file
-	with open(file_path, 'rb') as f:
-		file_data = f.read()
-	
-	
-	# Derive AES key and encrypt the file content
-	key = generate_key(password, salt)
-	iv, encrypted_data = encrypt(file_data, key)
-
-	# Create a socket connection to the server
-	client_socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	#with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-	client_socket.connect((server_ip, server_port))
-	# Send the salt and IV (16 bytes each), followed by the encrypted data
-	client_socket.sendall(salt + iv + encrypted_data)
-	#print("Encrypted Data:",encrypted_data)
-	print("File sent successfully!")
 
 if __name__ == "__main__":
 	client_send_file("example.txt", "127.0.0.1", 1500)
