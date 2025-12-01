@@ -67,8 +67,8 @@ class ClientThread(threading.Thread):
 				f.write(b"Encrypted Data:\n")
 				f.write(encrypted_data)
 				f.write(b"\n\nDecrypted Data:\n")
-				f.write(decrypted_data)
-				
+				f.write(decrypted_data) # lmao i forgot this line
+
 			print(f"File saved as '{filename}")
 
 		except Exception as e:
