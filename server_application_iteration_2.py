@@ -30,7 +30,7 @@ class ClientThread(threading.Thread):
 		threading.Thread.__init__(self)
 		self.ip = ip
 		self.port = port
-		self.client_socket - client_socket
+		self.client_socket = client_socket
 		print(f"[+] Thread started for {ip}:{port}")
 
 	def run(self):
@@ -67,7 +67,8 @@ class ClientThread(threading.Thread):
 				f.write(b"Encrypted Data:\n")
 				f.write(encrypted_data)
 				f.write(b"\n\nDecrypted Data:\n")
-			
+				f.write(decrypted_data)
+				
 			print(f"File saved as '{filename}")
 
 		except Exception as e:
@@ -110,4 +111,4 @@ def decrypt(ciphertext: bytes, key: bytes, iv: bytes) -> bytes:
 	return plaintext
 
 if __name__ == "__main__":
-    server_start("received_textfile.txt", "127.0.0.1", 1500)
+    server_start()
