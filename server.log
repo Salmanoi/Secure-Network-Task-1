@@ -3,3 +3,15 @@
 2025-12-01 23:55:46 - INFO - 127.0.0.1:59721 is verified.
 2025-12-01 23:55:46 - INFO - Log saved securely as received_file_59721.txt
 2025-12-01 23:55:46 - INFO - Socket connection closed for client: 127.0.0.1:59721
+2025-12-01 23:56:47 - INFO - Connected to client: 127.0.0.1:52258
+2025-12-01 23:56:47 - INFO - 127.0.0.1:52258 is verified.
+2025-12-01 23:56:47 - INFO - Log saved securely as received_file_52258.txt
+2025-12-01 23:56:47 - INFO - Socket connection closed for client: 127.0.0.1:52258
+2025-12-02 00:00:50 - INFO - Connected to client: 127.0.0.1:64707
+2025-12-02 00:00:50 - INFO - 127.0.0.1:64707 is verified.
+2025-12-02 00:00:50 - INFO - Log saved securely as received_file_64707.txt
+2025-12-02 00:00:50 - INFO - Socket connection closed for client: 127.0.0.1:64707
+2025-12-02 00:01:56 - INFO - Connected to client: 127.0.0.1:64806
+2025-12-02 00:01:56 - INFO - 127.0.0.1:64806 is verified.
+2025-12-02 00:01:56 - INFO - Log saved securely as received_file_64806.txt
+2025-12-02 00:01:56 - INFO - Socket connection closed for client: 127.0.0.1:64806
