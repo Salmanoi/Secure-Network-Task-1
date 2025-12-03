@@ -104,7 +104,7 @@ class ClientThread(threading.Thread):
 				logging.info(verified_msg)
 
 			# Step 6: Saving the data to a file based off port
-				filename = f"received_file_{self.port}.txt"
+				filename = f"Report_File_Port_{self.port}.txt"
 				with open(filename, 'wb') as f:
 
 					f.write(decrypted_data) # lmao i forgot this line
