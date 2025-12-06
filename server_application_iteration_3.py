@@ -10,6 +10,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives import padding, serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+
 #############################################################################
 # Configuring Server IP, port, and the Buffer size #
 SERVER_IP = '127.0.0.1' # --LOOPBACK-- DONT FORGET TO CHANGE THIS FOR THE CONFIGURATION OF DEMONSTRATION
@@ -19,8 +21,40 @@ LOG_FILE = "server.log"
 
 ####### Keys
 server_private_key = "server_private_key.pem"
+server_public_key = "server_public_key.pem"
 client_public_key = "client_public_key.pem"
 #######
+
+def key_existence():
+	"""This function creates the RSA keys for the server if they aren't available"""
+	if not os.path.exists(server_private_key) or not os.path.exists(server_public_key):
+		print("One or both server keys are missing. Generating new RSA Pair...")
+
+		# generating the server private key
+		private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+
+		# saving the private key
+		with open(server_private_key, "wb") as f:
+			f.write(private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            ))
+		
+		# saving the client public key
+		with open(server_public_key, "wb") as f:
+			f.write(private_key.public_key().public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            ))
+		print("Keys Generated.")
+	else:
+		print("Keys found.")
+
 
 # logging section
 logging.basicConfig(
@@ -30,8 +64,31 @@ logging.basicConfig(
 	datefmt='%Y-%m-%d %H:%M:%S'
 )
 
+def key_loading():
+	"""Loading RSA keys from .pem files"""
+	key_existence()
+	
+	try:
+		with open(server_private_key, "rb") as f:
+			server_priv = serialization.load_pem_private_key(
+				f.read(), password=None, backend=default_backend()
+			)
+		if not os.path.exists(client_public_key):
+			print(f"{client_public_key} not found. Can't verify signature without the key")
+			return server_priv, None
+
+		with open(client_public_key, "rb") as f:
+			client_pub = serialization.load_pem_public_key(
+				f.read(), backend=default_backend()
+			)
+		return server_priv, client_pub
+	except FileNotFoundError:
+		print("Error: Key's not found, Run 'key-generation.py' first or again.")
+		sys.exit(1)
+
 def signature_verify(data, signature, public_key):
 	"""Verifying the SHA-512 Signature"""
+	if public_key is None: return False # if no key
 	try:
 		public_key.verify(
 			signature,
@@ -43,21 +100,35 @@ def signature_verify(data, signature, public_key):
 	except Exception:
 		return False
 	
-def key_loading():
-	"""Loading RSA keys from .pem files"""
-	try:
-		with open(server_private_key, "rb") as f:
-			server_priv = serialization.load_pem_private_key(
-				f.read(), password=None, backend=default_backend()
-			)
-		with open(client_public_key, "rb") as f:
-			client_pub = serialization.load_pem_public_key(
-				f.read(), backend=default_backend()
-			)
-		return server_priv, client_pub
-	except FileNotFoundError:
-		print("Error: Key's not found, Run 'key-generation.py' first or again.")
-		sys.exit(1)
+def secure_file_store(data, filename, public_key):
+	"""Uses RSA and AES to save to disk securely"""
+
+	# step 1: generating temporary AES key for storage
+	storage_aes_key = os.urandom(32)
+	iv = os.urandom(16)
+
+	# step 2: encrypt the file with AES
+	cipher = Cipher(algorithms.AES(storage_aes_key), modes.CBC(iv), backend=default_backend())
+	encryptor = cipher.encryptor()
+	padder = padding.PKCS7(128).padder()
+	encrypted_data = encryptor.update(padder.update(data) + padder.finalize()) + encryptor.finalize()
+
+	# encrypts the AES key with servers rsa pub key
+	encrypted_key = public_key.encrypt(
+		storage_aes_key,
+		asym_padding.OAEP(
+			mgf=asym_padding.MGF1(algorithm=hashes.SHA256()),
+			algorithm=hashes.SHA256(),
+			label=None
+		)
+	)
+
+	# step 4: saving the file
+	with open(filename, "wb") as f:
+		f.write(encrypted_key + iv + encrypted_data)
+
+
+
 class ClientThread(threading.Thread):
 	def __init__(self, ip, port, client_socket, server_priv, client_pub):
 		threading.Thread.__init__(self)
@@ -127,14 +198,13 @@ class ClientThread(threading.Thread):
 
 
 def server_start():
-
 	server_priv, client_pub = key_loading()
 	try:
 		server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		server_socket.bind((SERVER_IP, SERVER_PORT)) # binds the server ip and port to the socket
-
 		server_socket.listen(10) # can listen to 10 clients at the same time
+
 		msg_server_start = f"Server is listening on {SERVER_IP}:{SERVER_PORT}..."
 		print(f"{msg_server_start}")
 		logging.info(f"System Started: {msg_server_start}")		
@@ -144,9 +214,11 @@ def server_start():
 		while True:
 				(conn, (ip, port)) = server_socket.accept()
 
-				new_thread = ClientThread(ip, port, conn, server_priv, client_pub)
-				new_thread.start()
-				threads.append(new_thread)
+				# this will reload the keys if the client key was added later
+				if client_pub is None: _, client_pub = key_loading()
+
+				ClientThread(ip, port, conn, server_priv, client_pub).start()
+
 
 	except socket.error as e:
 		print(f"Error Creating the following socket: {e}")
