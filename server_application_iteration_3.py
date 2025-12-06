@@ -22,7 +22,6 @@ LOG_FILE = "server.log"
 ####### Keys
 server_private_key = "server_private_key.pem"
 server_public_key = "server_public_key.pem"
-client_public_key = "client_public_key.pem"
 #######
 
 def key_existence():
@@ -73,15 +72,10 @@ def key_loading():
 			server_priv = serialization.load_pem_private_key(
 				f.read(), password=None, backend=default_backend()
 			)
-		if not os.path.exists(client_public_key):
-			print(f"{client_public_key} not found. Can't verify signature without the key")
-			return server_priv, None
+		with open(server_public_key, "rb") as f:
+			server_pub_bytes = f.read()
 
-		with open(client_public_key, "rb") as f:
-			client_pub = serialization.load_pem_public_key(
-				f.read(), backend=default_backend()
-			)
-		return server_priv, client_pub
+		return server_priv, server_pub_bytes
 	except FileNotFoundError:
 		print("Error: Key's not found, Run 'key-generation.py' first or again.")
 		sys.exit(1)
@@ -130,21 +124,31 @@ def secure_file_store(data, filename, public_key):
 
 
 class ClientThread(threading.Thread):
-	def __init__(self, ip, port, client_socket, server_priv, client_pub):
+	def __init__(self, ip, port, client_socket, server_priv, server_pub_bytes):
 		threading.Thread.__init__(self)
 		self.ip = ip
 		self.port = port
 		self.client_socket = client_socket
 		self.server_priv = server_priv
-		self.client_pub = client_pub
+		self.server_pub_bytes = server_pub_bytes
+		self.client_pub = None
 		connection_msg = f"Connected to client: {ip}:{port}"
 		print(f"[+] {connection_msg}")
 		logging.info(connection_msg)
 
 	def run(self):
-		full_data = b""
-
 		try:
+			# send the servers public key to client
+			self.client_socket.sendall(self.server_pub_bytes)
+
+			# get the client public key
+			client_pub_pem = self.client_socket.recv(BUFFER_SIZE)
+			self.client_pub = serialization.load_pem_public_key(client_pub_pem, backend=default_backend)
+			print(f"Handshake Key Exchange with {self.ip} completed")
+
+
+
+			full_data = b""
 			# Step 1: this loop is here to recieve all the data in the 1024 buffer size amount
 			while True:
 				data = self.client_socket.recv(BUFFER_SIZE)
@@ -174,11 +178,11 @@ class ClientThread(threading.Thread):
 				print(f"[VERIFIED] {verified_msg}")
 				logging.info(verified_msg)
 
-			# Step 6: Saving the data to a file based off port
-				filename = f"Report_File_Port_{self.port}.txt"
-				with open(filename, 'wb') as f:
+			# Step 6: Saving the data securely with server public key
+				server_pub = self.server_priv.public_key()
+				filename = f"Report_File_Port_{self.port}.enc"
 
-					f.write(decrypted_data) # lmao i forgot this line
+				secure_file_store(decrypted_data, filename, server_pub)
 
 				msg_saved = f"Log saved securely as {filename}"
 				print(f"[SAVED] {msg_saved}")
