@@ -17,7 +17,7 @@ SCHEDULED_TIME_MINUTE = 00 # 5PM/17:00
 monitor_interval = 30 # this is in seconds
 
 # SERVER INFORMATION & KEYS # 
-SERVER_IP = '127.0.0.1' 
+SERVER_IP = '192.168.99.100' 
 SERVER_PORT = 1500 
 
 client_private_key = "client_private_key.pem"
@@ -133,14 +133,14 @@ def report_sending(file_path):
             print(f"Connecting to {SERVER_IP}...")
             s.connect((SERVER_IP, SERVER_PORT))
 
-            # --- HANDSHAKE START ---
+            #######################
             # 1. Receive Server Public Key
             server_pub_pem = s.recv(2048)
             server_pub = serialization.load_pem_public_key(server_pub_pem, backend=default_backend())
             
             # 2. Send Client Public Key
             s.sendall(client_pub_bytes)
-            # --- HANDSHAKE END ---
+            #######################
 
             # Encryption
             aes_key = os.urandom(32)
