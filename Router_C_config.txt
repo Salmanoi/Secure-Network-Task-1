@@ -1,0 +1,142 @@
+!
+hostname Router_C
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+license udi pid ISR4321/K9 sn FDO22432PJV
+!
+spanning-tree extend system-id
+!
+!
+redundancy
+ mode none
+!
+!
+!
+!
+!
+vlan internal allocation policy ascending
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+! 
+! 
+! 
+! 
+! 
+!
+!
+interface GigabitEthernet0/0
+ ip address 192.168.99.1 255.255.255.0
+ ip access-group Server_Auth out
+ negotiation auto
+!
+interface GigabitEthernet0/1
+ no ip address
+ negotiation auto
+!
+interface Serial0/1/0
+ ip address 10.0.0.6 255.255.255.252
+ ip ospf message-digest-key 1 md5 %Pa55w0rd
+!
+interface Serial0/1/1
+ ip address 10.0.0.2 255.255.255.252
+ ip ospf message-digest-key 1 md5 %Pa55w0rd
+!
+interface GigabitEthernet0
+ vrf forwarding Mgmt-intf
+ no ip address
+ negotiation auto
+!
+interface Vlan1
+ no ip address
+!
+router ospf 1
+ area 0 authentication message-digest
+ network 10.0.0.0 0.0.0.3 area 0
+ network 10.0.0.4 0.0.0.3 area 0
+ network 192.168.99.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+no ip http server
+no ip http secure-server
+!
+!
+ip access-list extended Server_Auth
+ permit tcp any host 192.168.99.100 eq 1500
+ permit icmp 192.168.10.0 0.0.0.255 host 192.168.99.100
+ permit tcp 192.168.10.0 0.0.0.255 host 192.168.99.100 eq 22
+ permit icmp 192.168.40.0 0.0.0.255 host 192.168.99.100
+ permit tcp 192.168.40.0 0.0.0.255 host 192.168.99.100 eq 22
+ deny   ip any any
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ login
+!
+!
+end
